@@ -8,7 +8,7 @@
 
 This research project consists of the development and integration of both artificial vision and machine learning tools, as well as different computational models of fluid dynamics, all of them focused on the design of a high-fidelity Digital Twin for the estimation of the transport of polluting agents. These tools will assist decision-making in the context of the green transition of cities, understanding polluting agents as particles emitted by mobile sources of pollution (thermal vehicles). This project is being carried out by two high-performance research groups: GIQA and CAPO. The first of them, the Chemical and Environmental Engineering Group, is made up of experts in catalysis and adsorption for environmental and energy applications. For its part, the CAP (Advanced Computing, Perception and Optimization) group addresses computer vision and high performance computing tasks.
 
-![Logo1](https://github.com/capo-urjc/pollutwin/blob/main/docs/imgs/logoCAPO.png)
+![Logo1](https://github.com/capo-urjc/pollutwin/blob/main/docs/imgs/logoGICA.png)
 ![Logo2](https://github.com/capo-urjc/pollutwin/blob/main/docs/imgs/logoCAPO.png)
 
 

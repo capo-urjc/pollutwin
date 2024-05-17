@@ -45,8 +45,6 @@
   <script src="static/js/index.js"></script>
 </head>
 <body>
-
-
   <section class="hero">
     <div class="hero-body">
       <div class="container is-max-desktop">
@@ -139,154 +137,23 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            Computer-Aided Sperm Analysis (CASA) systems play a critical role in diagnosing fertility issues. They are essential for treating infertility in humans and are equally valuable in the domain of domestic animal reproduction, where they support studies on sperm competition and wildlife semen assessment. However, the lack of publicly available datasets and the difficulties associated with data labelling constitute a significant challenge. In this paper, we propose a solution to address this challenge by introducing a synthetic data generation approach based on a parametric model. We demonstrate the effectiveness of our approach by successfully addressing two key sperm analysis tasks: sperm count and sperm motility assessment. Our proposed system uses synthetic data for training and is validated with real-world boar sperm images. The results obtained show a mean average precision (mAP) of 84.3% for the sperm count task, and a multiple object tracking accuracy (MOTA) of 80.5% for motility estimation task. Furthermore, the computational requirements of our solution are minimal, enabling its execution on embedded systems and facilitating its integration into professional CASA systems.          </p>
+            We present a real-time system for vehicle detection and classification in road intersections, incorporating image processing techniques. 
+            This system estimates the traffic flow at a specific point, as it is capable of recognizing the trajectories 
+            of different vehicles at an intersection, inferring whether they leave or enter the city. It is designed to be
+            integrated into a high-fidelity digital twin, aiding in estimating environmental traffic pollutants. 
+            Since Computational Fluid Dynamics (CFD) use estimators like average or aggregate measurements, we use
+            more accurate methods to estimate pollution. The implications of our study are significant for urban planning and traffic management. 
+            It allows for immediate decisions and informs long-term infrastructure planning by providing a deep understanding of intersection 
+            dynamics. Our research offers a comprehensive perspective on traffic analysis, introducing data-driven traffic management strategies 
+            for efficient urban mobility. 
+            The code developed for this purpose can be found in \https://github.com/capo-urjc/TrackingSORT      
+          </p>
         </div>
       </div>
     </div>
   </div>
 </section>
 <!-- End paper abstract -->
-
-<section class="section">
-<div class="columns is-centered">
-
-  <!-- Real images. -->
-  <div class="column">
-    <div align="center"><h2 class="title is-3">Read microscopic dataset</h2></div>
-    <div class="columns is-centered">
-      <div class="column content" style="width: 40%">
-        <p>
-          <br>We have collected a boar sperm dataset called <i>BOSS</i> gathered with the help of expert technicians. This images present hundreds of individuals, as boar sperm has a higher concentration than human sperm.
-        </p>
-        <img src="static/images/real.png" alt="Real sperm image" class="center"/> 
-      </div>
-    </div>
-  </div>
-  <!--/ Real Images. -->
-
-  <!-- Synthetic. -->
-  <div class="column">
-    <div align="center"><h2 class="title is-3">Synthetic dataset</h2></div>
-    <div class="columns is-centered">
-      <div class="column content" style="width: 40%">
-        <p>
-          <br>In order to avoid the process of labelling hundreds of heads, we have created a synthetic dataset. This dataset is generated through a parametric model characterized from the measurements of the composing elements.
-        </p>
-        <img src="static/images/synth.png" alt="Synthetic sperm image" class="center"/> 
-      </div>
-    </div>
-  </div>
-</div>
-</section>
-
-<!-- Detection -->
-<section class="hero is-light">
-  <div class="hero-body">
-    <div class="container">
-      <h2 class="title is-3">Sperm count</h2>
-      <div class="columns is-centered">
-        <div class="column content">
-            <p>
-              We have tested our synthetic dataset training lightweight detection models such as YOLOv5 to be able to count the total number of spermatozoa. This models are validated with real videos from  <i>BOSS</i>, with results of over 84% in mAP.
-            </p>
-        </div>
-      </div>
-      <div id="results-carousel" class="carousel results-carousel">
-        <div class="item item-video1">
-          <div class="columns is-centered">
-            <div class="column content">
-              <video poster="" id="video1" autoplay controls muted loop height="100%">
-                <!-- Your video file here -->
-                <source src="static/videos/d1.mp4"
-                type="video/mp4">
-              </video>
-            </div>
-            <div class="column content">
-              <video poster="" id="video2" autoplay controls muted loop height="100%">
-                <!-- Your video file here -->
-                <source src="static/videos/d2.mp4"
-                type="video/mp4">
-              </video>
-            </div>
-          </div>
-        </div>
-        <div class="item item-video2">
-          <div class="columns is-centered">
-            <div class="column content">
-              <video poster="" id="video3" autoplay controls muted loop height="100%">
-                <!-- Your video file here -->
-                <source src="static/videos/d3.mp4"
-                type="video/mp4">
-              </video>
-            </div>
-            <div class="column content">
-              <video poster="" id="video4" autoplay controls muted loop height="100%">
-                <!-- Your video file here -->
-                <source src="static/videos/d4.mp4"
-                type="video/mp4">
-              </video>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- End video carousel -->
-
-<!-- Tracking -->
-<section class="hero is-small">
-  <div class="hero-body">
-    <div class="container">
-      <h2 class="title is-3">Sperm motility</h2>
-      <div class="columns is-centered">
-        <div class="column content">
-            <p>
-              To complete a real CASA system we use the previous detection to characterize the movement of each individual. The tracking is done with the well-known Kalman filter, obtaining a good and fast estimation of the postion and speed, with a MOTA of 80.5%.
-            </p>
-        </div>
-      </div>
-      <div id="results-carousel" class="carousel results-carousel">
-        <div class="item item-video1">
-          <div class="columns is-centered">
-            <div class="column content">
-              <video poster="" id="video1" autoplay controls muted loop height="100%">
-                <!-- Your video file here -->
-                <source src="static/videos/t1.mp4"
-                type="video/mp4">
-              </video>
-            </div>
-            <div class="column content">
-              <video poster="" id="video2" autoplay controls muted loop height="100%">
-                <!-- Your video file here -->
-                <source src="static/videos/t2.mp4"
-                type="video/mp4">
-              </video>
-            </div>
-          </div>
-        </div>
-        <div class="item item-video2">
-          <div class="columns is-centered">
-            <div class="column content">
-              <video poster="" id="video3" autoplay controls muted loop height="100%">
-                <!-- Your video file here -->
-                <source src="static/videos/t3.mp4"
-                type="video/mp4">
-              </video>
-            </div>
-            <div class="column content">
-              <video poster="" id="video4" autoplay controls muted loop height="100%">
-                <!-- Your video file here -->
-                <source src="static/videos/t4.mp4"
-                type="video/mp4">
-              </video>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 <!-- End video carousel -->
 
   <!--BibTex citation -->

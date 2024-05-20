@@ -8,7 +8,7 @@ from Tracker import Tracker
 
 
 def video_from_files(path: str) -> str:
-    frame_files = natsorted([f for f in os.listdir(path) if f.endswith('.png')])
+    frame_files = natsorted([f for f in os.listdir(path) if f.endswith('.png')])[250:750]
 
     if not frame_files:
         raise ValueError("No frames found in the specified directory.")
@@ -66,9 +66,9 @@ def main():
 
     tracker = Tracker(straights, masks)
 
-    path: str = "inputs/video1/video.mp4"
+    path: str = video_from_files("inputs/video1")
 
-    track: dict = tracker.track(path, True, True)
+    track: dict = tracker.track(path, False, True)
 
     for k, v in track.items():
         id_ = k

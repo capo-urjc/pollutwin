@@ -30,15 +30,15 @@ class Tracker:
     def track(self, video_path: str, show: bool = False, save: bool = True) -> dict:
         video = norfair.Video(input_path=video_path, output_path="outputs/" + video_path.split("/")[-1])
 
-        colors: list = []
-        for i in range(len(self.__straights)):
-            colors.append((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
+        # colors: list = []
+        # for i in range(len(self.__straights)):
+        #     colors.append((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
 
         last_frame = None
         for frame in video:
             last_frame = frame
-            for i in range(len(self.__straights)):
-                self.__straights[i].paint(frame, color=colors[i], thickness=2)
+            # for i in range(len(self.__straights)):
+            #     self.__straights[i].paint(frame, color=colors[i], thickness=2)
 
             yolo_detections = self.__detector(
                 frame,
@@ -84,11 +84,6 @@ class Tracker:
                 cv2.imshow("", frame)
                 if cv2.waitKey(1) == ord('q'):
                     break
-
-        if last_frame is not None:
-            for i in range(len(self.__straights)):
-                self.__straights[i].paint(last_frame, color=colors[i], thickness=2)
-            cv2.imwrite("inputs/trayectorias_sh.png", last_frame)
 
         track: dict[int, list] = self.get_tracking()
         return track

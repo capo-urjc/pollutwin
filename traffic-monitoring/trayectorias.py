@@ -66,9 +66,9 @@ def main():
 
     tracker = Tracker(straights, masks)
 
-    path: str = video_from_files("inputs/video1")
+    path: str = "inputs/video1/video1.mp4"
 
-    track: dict = tracker.track(path, False, True)
+    track: dict = tracker.track(path, True, True)
 
     for k, v in track.items():
         id_ = k

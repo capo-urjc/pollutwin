@@ -30,10 +30,7 @@ class Tracker:
         return [np.mean(np.array(points), axis=0)]
 
     def track(self, video_path: str, show: bool = False, save: bool = True) -> dict:
-        video = norfair.Video(input_path=video_path)
-
-        if not os.path.exists("outputs/" + video_path.split("/")[-1]):
-            os.mkdir("outputs/" + video_path.split("/")[-1])
+        video = norfair.Video(input_path=video_path, output_path="outputs/" + video_path.split("/")[-1])
 
         # colors: list = []
         # for i in range(len(self.__straights)):
@@ -84,8 +81,7 @@ class Tracker:
 
                     self.__tracking[id].append(centroid)
             if save:
-                # video.write(frame)
-                cv2.imwrite("outputs/" + video_path.split("/")[-1], frame)
+                video.write(frame)
             if show:
                 cv2.imshow("", frame)
                 if cv2.waitKey(1) == ord('q'):

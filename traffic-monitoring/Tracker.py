@@ -1,5 +1,6 @@
 import cv2
 from Detector import Detector
+from norfair import Detection
 import norfair
 import numpy as np
 import random
@@ -17,14 +18,17 @@ class Tracker:
         for i in range(500):
             self.__tracking[i] = []
 
-        self.__detector = Detector("yolov5s")
+        self.__detector = Detector("yolov7-d6.pt")
         self.__tracker = norfair.Tracker(distance_function="euclidean", distance_threshold=100)
 
     def get_tracking(self):
         return self.__tracking
 
+    def center(self, points):
+        return [np.mean(np.array(points), axis=0)]
+
     def track(self, video_path: str, show: bool = False, save: bool = True) -> dict:
-        video = norfair.Video(input_path=video_path, output_path="outputs/"+video_path.split("/")[-1])
+        video = norfair.Video(input_path=video_path, output_path="outputs/" + video_path.split("/")[-1])
 
         colors: list = []
         for i in range(len(self.__straights)):
@@ -38,28 +42,27 @@ class Tracker:
 
             yolo_detections = self.__detector(
                 frame,
-                conf_threshold=0.25,
-                iou_threshold=0.45,
-                image_size=800,
+                conf_threshold=0.1,
+                iou_threshold=0.1,
+                image_size=frame.shape[1],
                 classes=[2, 3, 5, 7]
-                # Filtrar por clases, solo queremos detectar vehiculos
             )
 
-            for index, row in yolo_detections.pandas().xyxy[0].iterrows():
-                label: str = str(row["class"])
-                x1: int = int(row["xmin"])
-                y1: int = int(row["ymin"])
+            # for index, row in yolo_detections.pandas().xyxy[0].iterrows():
+            #     label: str = str(row["class"])
+            #     x1: int = int(row["xmin"])
+            #     y1: int = int(row["ymin"])
 
-                if label == "2":
-                    label = "Car"
-                elif label == "3":
-                    label = "Moto"
-                elif label == "5":
-                    label = "Bus"
-                elif label == "7":
-                    label = "Truck"
+            # if label == "2":
+            #     label = "Car"
+            # elif label == "3":
+            #     label = "Moto"
+            # elif label == "5":
+            #     label = "Bus"
+            # elif label == "7":
+            #     label = "Truck"
 
-                cv2.putText(frame, label, (x1 + 25, y1 + 25), cv2.QT_FONT_NORMAL, 0.7, (170, 220, 12), 1)
+            # cv2.putText(frame, label, (x1 + 25, y1 + 25), cv2.QT_FONT_NORMAL, 0.7, (170, 220, 12), 1)
 
             detections = self.__yolo_detections_to_norfair_detections(
                 yolo_detections, track_points="centroid"
@@ -155,12 +158,12 @@ class Tracker:
         print('----')
         for i in range(0, matrix.shape[0]):
             for j in range(0, matrix.shape[1]):
-                print(f"tr_{i+1}{j+1} = {matrix[i][j]},", end=' ')
+                print(f"tr_{i + 1}{j + 1} = {matrix[i][j]},", end=' ')
             print()
 
     def __yolo_detections_to_norfair_detections(self, yolo_detections: torch.tensor, track_points: str = "centroid") \
             -> List[norfair.Detection]:
-        norfair_detections: List[norfair.Detection] = []
+        norfair_detections: List[Detection] = []
 
         if track_points == "centroid":
             detections_as_xywh = yolo_detections.xywh[0]
@@ -170,7 +173,7 @@ class Tracker:
                 )
                 scores = np.array([detection_as_xywh[4].item()])
                 norfair_detections.append(
-                    norfair.Detection(
+                    Detection(
                         points=centroid,
                         scores=scores,
                         label=int(detection_as_xywh[-1].item()),
@@ -189,7 +192,7 @@ class Tracker:
                     [detection_as_xyxy[4].item(), detection_as_xyxy[4].item()]
                 )
                 norfair_detections.append(
-                    norfair.Detection(
+                    Detection(
                         points=bbox, scores=scores, label=int(detection_as_xyxy[-1].item())
                     )
                 )

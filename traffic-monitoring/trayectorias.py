@@ -1,8 +1,39 @@
 import cv2
 from matplotlib import pyplot as plt
+from natsort import natsorted
 import numpy as np
+import os
 from Straight import Straight
 from Tracker import Tracker
+
+
+def video_from_files(path: str) -> str:
+    frame_files = natsorted([f for f in os.listdir(path) if f.endswith('.png')])
+
+    if not frame_files:
+        raise ValueError("No frames found in the specified directory.")
+
+    # Read the first frame to get the frame dimensions
+    first_frame = cv2.imread(os.path.join(path, frame_files[0]))
+    height, width, layers = first_frame.shape
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fps = 30  # Frames per second
+
+    video_path = f"{path}/videos.mp4"
+    out = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
+
+    for frame_file in frame_files:
+        frame_path = os.path.join(path, frame_file)
+        frame = cv2.imread(frame_path)
+        frame[:295, 330:] = (0, 0, 0)
+        out.write(frame)
+
+    out.release()
+
+    print(f"Video saved as {video_path}")
+
+    return video_path
 
 
 def main():
@@ -35,7 +66,9 @@ def main():
 
     tracker = Tracker(straights, masks)
 
-    track: dict = tracker.track("sherbrooke_video.avi", True, False)
+    path: str = "inputs/video1/video.mp4"
+
+    track: dict = tracker.track(path, True, True)
 
     for k, v in track.items():
         id_ = k
@@ -54,8 +87,8 @@ def main():
                     y = lista_prueba[j][0][1]
                     plt.plot(x, y, marker='.', color="yellow", alpha=0.1)
 
-    mat_res = tracker.get_tracking_info()
-    tracker.print_matrix(mat_res)
+    # mat_res = tracker.get_tracking_info()
+    # tracker.print_matrix(mat_res)
 
 
 if __name__ == '__main__':

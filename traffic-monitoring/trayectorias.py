@@ -20,7 +20,7 @@ def video_from_files(path: str) -> str:
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     fps = 30  # Frames per second
 
-    video_path = f"{path}/videos.mp4"
+    video_path = f"{path}/video.mp4"
     out = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
 
     for frame_file in frame_files:

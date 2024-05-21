@@ -26,7 +26,7 @@ def video_from_files(path: str) -> str:
     for frame_file in frame_files:
         frame_path = os.path.join(path, frame_file)
         frame = cv2.imread(frame_path)
-        frame[:295, 330:] = (0, 0, 0)
+        #frame[:295, 330:] = (0, 0, 0)
         out.write(frame)
 
     out.release()
@@ -66,7 +66,7 @@ def main():
 
     tracker = Tracker(straights, masks)
 
-    path: str = "inputs/video1/video1.mp4"
+    path: str = video_from_files("inputs/video1")
 
     track: dict = tracker.track(path, True, True)
 

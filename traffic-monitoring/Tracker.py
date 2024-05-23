@@ -1,13 +1,14 @@
-import os.path
-
 import cv2
 from Detector import Detector
+from EfficientNetEmbedding import EfficientNetEmbedding
+from norfair.filter import OptimizedKalmanFilterFactory
 from norfair import Detection
 import norfair
 import numpy as np
-import random
+from PIL import Image
 from Straight import Straight
 import torch
+from torchvision import transforms
 from typing import List
 
 
@@ -18,10 +19,25 @@ class Tracker:
         self.__tracking: dict = {}
 
         for i in range(500):
-            self.__tracking[i] = []
+            self.__tracking[i] = [0] * 20
 
         self.__detector = Detector("yolov7-d6.pt")
-        self.__tracker = norfair.Tracker(distance_function="euclidean", distance_threshold=100)
+        self.__embedding = EfficientNetEmbedding()
+        self.__embedding.eval()
+        self.__transform = transforms.Compose([
+            transforms.Resize(224),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+
+        self.__tracker = norfair.Tracker(initialization_delay=1,
+                                         distance_function="euclidean",
+                                         distance_threshold=50,
+                                         past_detections_length=5,
+                                         #reid_distance_function=self.__euclidean_distance,
+                                         #reid_distance_threshold=30,
+                                         )
 
     def get_tracking(self):
         return self.__tracking
@@ -32,54 +48,56 @@ class Tracker:
     def track(self, video_path: str, show: bool = False, save: bool = True) -> dict:
         video = norfair.Video(input_path=video_path, output_path="outputs/" + video_path.split("/")[-1])
 
-        # colors: list = []
-        # for i in range(len(self.__straights)):
-        #     colors.append((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
-
-        last_frame = None
+        i: int = 0
         for frame in video:
-            last_frame = frame
-            # for i in range(len(self.__straights)):
-            #     self.__straights[i].paint(frame, color=colors[i], thickness=2)
-
             yolo_detections = self.__detector(
                 frame,
-                conf_threshold=0.1,
-                iou_threshold=0.1,
+                conf_threshold=0.5,
+                iou_threshold=0.5,
                 image_size=frame.shape[1],
                 classes=[2, 3, 5, 7]
             )
 
-            # for index, row in yolo_detections.pandas().xyxy[0].iterrows():
-            #     label: str = str(row["class"])
-            #     x1: int = int(row["xmin"])
-            #     y1: int = int(row["ymin"])
-
-            # if label == "2":
-            #     label = "Car"
-            # elif label == "3":
-            #     label = "Moto"
-            # elif label == "5":
-            #     label = "Bus"
-            # elif label == "7":
-            #     label = "Truck"
-
-            # cv2.putText(frame, label, (x1 + 25, y1 + 25), cv2.QT_FONT_NORMAL, 0.7, (170, 220, 12), 1)
-
-            detections = self.__yolo_detections_to_norfair_detections(
-                yolo_detections, track_points="centroid"
+            bbox_detections = self.__yolo_detections_to_norfair_detections(
+                yolo_detections, track_points="bbox"
             )
 
-            tracked_objects = self.__tracker.update(detections=detections)
-            norfair.draw_points(frame, detections)
-            norfair.draw_tracked_objects(frame, tracked_objects)
+            # for detection in bbox_detections:
+            #     cut = norfair.get_cutout(detection.points, frame)
+#
+            #     if cut.shape[0] > 0 and cut.shape[1] > 0:
+            #         cut = Image.fromarray(cut)
+            #         cut = self.__transform(cut).unsqueeze(0)
+            #         with torch.no_grad():
+            #             detection.embedding = self.__embedding(cut)
+
+            tracked_objects = self.__tracker.update(detections=bbox_detections)
+            # norfair.draw_points(frame, detections)
+            # norfair.draw_tracked_objects(frame, tracked_objects)
 
             if len(tracked_objects) > 0:
+                to_draw: List["TrackedObject"] = []
                 for tracked_object in tracked_objects:
-                    centroid: np.ndarray = tracked_object.estimate
+                    bbox: np.ndarray = tracked_object.estimate
+
+                    centroidx: float = (bbox[0, 0] + bbox[1, 0]) / 2
+                    centroidy: float = (bbox[0, 1] + bbox[1, 1]) / 2
+
+                    centroid: np.ndarray = np.array([centroidx, centroidy])
                     id: int = tracked_object.global_id
 
-                    self.__tracking[id].append(centroid)
+                    cv2.putText(frame, str(id), (int(centroid[0] - 18), int(centroid[1] - 18)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                (0, 255, 0), 2)
+                    cv2.circle(frame, (int(centroid[0]), int(centroid[1])), 2, (0, 255, 0), -1
+                               )
+
+                    if np.linalg.norm(centroid - self.__tracking[id][(i + 1) % 20]) > 20:
+                        self.__tracking[id][i % 20] = centroid
+                        to_draw.append(tracked_object)
+
+                # norfair.draw_tracked_objects(frame, to_draw)
+            i += 1
             if save:
                 video.write(frame)
             if show:
@@ -157,6 +175,28 @@ class Tracker:
             for j in range(0, matrix.shape[1]):
                 print(f"tr_{i + 1}{j + 1} = {matrix[i][j]},", end=' ')
             print()
+
+    def __euclidean_distance(self, matched_not_init_object, unmatched_object):
+        second_embedding = unmatched_object.last_detection.embedding
+
+        if second_embedding is None:
+            for detection in reversed(unmatched_object.past_detections):
+                if detection.embedding is not None:
+                    second_embedding = detection.embedding
+                    break
+            else:
+                return 1000
+
+        for detection_fst in matched_not_init_object.past_detections:
+            if detection_fst.embedding is None:
+                continue
+
+            distance = torch.dist(detection_fst.embedding, second_embedding, p=2).item()
+
+            if distance < 30:
+                return distance
+
+        return 1000
 
     def __yolo_detections_to_norfair_detections(self, yolo_detections: torch.tensor, track_points: str = "centroid") \
             -> List[norfair.Detection]:
